@@ -2,4 +2,31 @@
     <string name="app_name">My Application</string>
     <string name="moniphone">MoniPhone</string>
     <string name="todo">memory</string>
+    <string name="wifi_state">OFF</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="wifi_text">Wifi: </string>
+    <string name="bluetooth_Text">Bluetooth: </string>
+    <string name="cellular_text">Mobile Data: </string>
+    <string name="nav_message_2">Build</string>
+    <string name="nav_message_1">Network</string>
+    <string name="brand">Brand</string>
+    <string name="product">Product</string>
+    <string name="manufacturer">Manufacturer</string>
+    <string name="hardware">Hardware</string>
+    <string name="device">Device</string>
+    <string name="model">Model</string>
+    <string name="sdk">SDK</string>
+    <string name="release">Release</string>
+    <string name="security_patch">Security Patch</string>
+    <string name="sendText">send:</string>
+    <string name="receiveText">receive:</string>
+    <string name="ident_bt">ID:</string>
+    <string name="idbr_notf">Not Found\n</string>
+    <string-array name="navigation_drawer_items_array">
+        <item>Home</item>
+        <item>Networks</item>
+        <item>Device</item>
+        <item>Storage</item>
+    </string-array>
 </resources>
