@@ -2,10 +2,8 @@ package com.example.myapplication;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
-import android.content.BroadcastReceiver;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -18,7 +16,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -28,15 +25,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.net.ConnectException;
-
+import java.lang.reflect.Method;
 
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link NetworkFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class NetworkFragment extends Fragment {
+public class NetworkFragment extends Fragment{
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -45,13 +41,16 @@ public class NetworkFragment extends Fragment {
     public static final int REQUEST_CODE_LOCATION_PERMISSION = 1;
     private TextView wifi_state;
     private TextView bt_state;
+    private TextView bt_id;
     private TextView cell_state;
     private ConnectivityManager cm;
-    private BluetoothManager btmanager;
+    private TextView rate;
+    private TextView operatorName;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
+    private WifiBluetoothReceiver wifiBluetoothReceiver;
     public NetworkFragment() {
         // Required empty public constructor
     }
@@ -75,15 +74,26 @@ public class NetworkFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        NetworkRequest networkRequest = new NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
+                .build();
+        wifiBluetoothReceiver = new WifiBluetoothReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        requireActivity().registerReceiver(wifiBluetoothReceiver, filter);
+    }
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
-        IntentFilter intentFilter = new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION);
-        LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(wifiReceiver, intentFilter);
-        LocalBroadcastManager.getInstance(requireActivity()).registerReceiver(btReceiver, intentFilter);
     }
 
     @Override
@@ -94,140 +104,79 @@ public class NetworkFragment extends Fragment {
         wifi_state = v.findViewById(R.id.wifi_status);
         bt_state = v.findViewById(R.id.bt_status);
         cell_state = v.findViewById(R.id.cell_status);
+        rate = v.findViewById(R.id.data_rate);
+        bt_id = v.findViewById(R.id.bt_id);
+        operatorName = v.findViewById(R.id.operator_name);
         TelephonyManager telephonyManager = (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
         if (ActivityCompat.checkSelfPermission(requireActivity(), android.Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             int networkType = telephonyManager.getNetworkType();
-
             switch (networkType) {
                 case TelephonyManager.NETWORK_TYPE_GPRS:
                     Log.d("mess", "gprs");
                     break;
                 case TelephonyManager.NETWORK_TYPE_EDGE:
-                    Log.d("mess","GSM");
+                    Log.d("mess", "GSM");
                     break;
+            }
+        } else {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION_PERMISSION);
+        }
+        requireActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                operatorName.setText(telephonyManager.getSimOperatorName());
+            }
+        });
+        if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+            if (bluetoothAdapter == null) {
+            }
+            if (!bluetoothAdapter.isEnabled()) {
+                requireActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        bt_id.setText(bluetoothAdapter.getName());
+                    }
+                });
             }
         }
         else {
-            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE_LOCATION_PERMISSION);
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.BLUETOOTH_CONNECT}, REQUEST_CODE_LOCATION_PERMISSION);
         }
-        Log.d("tel_ope_name", telephonyManager.getNetworkOperatorName());
-        Log.d("tel_ope", telephonyManager.getNetworkOperator());
         return v;
     }
-    private final ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback(){
-        @Override
-        public void onAvailable(@NonNull Network network) {
-            super.onAvailable(network);
-            requireActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if(cm.getActiveNetworkInfo().getType() == ConnectivityManager.TYPE_MOBILE) cell_state.setText("ON");
-                }
-            });
-        }
-
-        @Override
-        public void onLost(@NonNull Network network) {
-            super.onLost(network);
-            requireActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    cell_state.setText("OFF");
-                    wifi_state.setText("OFF");
-                }
-            });
-        }
-
-        @Override
-        public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities networkCapabilities) {
-            super.onCapabilitiesChanged(network, networkCapabilities);
-        }
-    };
-    @Override
-    public void onStart() {
-        super.onStart();
-        NetworkRequest networkRequest = new NetworkRequest.Builder()
-                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-                .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
-                .build();
-        cm = requireActivity().getSystemService(ConnectivityManager.class);
-        cm.requestNetwork(networkRequest, networkCallback);
-    }
-
-    public BroadcastReceiver wifiReceiver;
-    {
-        wifiReceiver = new BroadcastReceiver() {
+    public void updateFragmentBtUI(String status) {
+        requireActivity().runOnUiThread(new Runnable() {
             @Override
-            public void onReceive(Context context, Intent intent) {
-                    // wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-                    int wifiExtra = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, WifiManager.WIFI_STATE_UNKNOWN);
-                    switch (wifiExtra){
-                        case WifiManager.WIFI_STATE_ENABLED:
-                        requireActivity().runOnUiThread(new Runnable(){
-                            @Override
-                            public void run() {
-                                wifi_state.setText("ON");
-                            }
-                        });
-                        String ss = WifiManager.EXTRA_NEW_RSSI;
-                        Log.d("strength", ss);
-
-                        case WifiManager.WIFI_STATE_DISABLED:
-                        requireActivity().runOnUiThread(new Runnable(){
-                            @Override
-                            public void run() {
-                                wifi_state.setText("OFF");
-                            }
-                        });
-                        Log.d("stat", "disabled");
-                    }
-                }
-        };
+            public void run() {
+                bt_state.setText(status);
+            }
+        });
     }
-    public BroadcastReceiver btReceiver;
-    {
-        btReceiver = new BroadcastReceiver() {
+    public void updateFragmentWiUI(String status){
+        requireActivity().runOnUiThread(new Runnable() {
             @Override
-            public void onReceive(Context context, Intent intent) {
-                // btmanager = (BluetoothManager) requireActivity().getSystemService(Context.BLUETOOTH_SERVICE);
-                if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())){
-                    int state_bt = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-                    handleBluetoothStateChange(context, state_bt);
-                }
+            public void run() {
+                wifi_state.setText(status);
             }
-
-            public void handleBluetoothStateChange(Context context, int state){
-                switch (state){
-                    case BluetoothAdapter.STATE_OFF:
-                        requireActivity().runOnUiThread(new Runnable(){
-                            @Override
-                            public void run() {
-                                bt_state.setText("OFF");
-                            }
-                        });break;
-                    case BluetoothAdapter.STATE_ON:
-                        requireActivity().runOnUiThread(new Runnable(){
-                            @Override
-                            public void run() {
-                                bt_state.setText("ON");
-                            }
-                        });break;
-                }
-            }
-        };
+        });
     }
-
+    public void updateFragmentCellUI(String status){
+        requireActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                cell_state.setText(status);
+            }
+        });
+    }
     @Override
     public void onStop() {
         super.onStop();
-        LocalBroadcastManager.getInstance(requireActivity()).unregisterReceiver(wifiReceiver);
-        LocalBroadcastManager.getInstance(requireActivity()).unregisterReceiver(btReceiver);
+        requireActivity().unregisterReceiver(wifiBluetoothReceiver);
     }
+
 }

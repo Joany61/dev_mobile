@@ -53,12 +53,12 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/textView16"
+                    app:layout_constraintEnd_toStartOf="@+id/bt_id"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
                 <TextView
-                    android:id="@+id/textView16"
+                    android:id="@+id/bt_id"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="120dp"
@@ -104,6 +104,20 @@
                         android:text="@string/wifi_state"
                         app:layout_constraintBaseline_toBaselineOf="@+id/textView2"
                         app:layout_constraintStart_toEndOf="@+id/textView2" />
+
+                    <TextView
+                        android:id="@+id/operator_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="104dp"
+                        android:layout_marginTop="27dp"
+                        android:layout_marginEnd="21dp"
+                        android:layout_marginBottom="9dp"
+                        android:text="@string/ope_not_found"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/cell_status"
+                        app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
 
@@ -152,12 +166,12 @@
             android:layout_height="wrap_content">
 
             <TextView
-                android:id="@+id/send_data_rate"
+                android:id="@+id/data_rate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
                 android:layout_marginEnd="158dp"
-                android:text="0 kb/s"
+                android:text="0 DB"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -169,33 +183,10 @@
                 android:layout_marginTop="18dp"
                 android:layout_marginEnd="132dp"
                 android:text="@string/sendText"
-                app:layout_constraintEnd_toStartOf="@+id/send_data_rate"
+                app:layout_constraintEnd_toStartOf="@+id/data_rate"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <TextView
-                android:id="@+id/receive_data_rate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="158dp"
-                android:text="0 kb/s"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/textView14" />
-
-            <TextView
-                android:id="@+id/textView14"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="33dp"
-                android:layout_marginTop="23dp"
-                android:layout_marginBottom="343dp"
-                android:text="@string/receiveText"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/receive_data_rate"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView12"
-                app:layout_constraintVertical_bias="0.0" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>

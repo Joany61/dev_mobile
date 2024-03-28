@@ -38,6 +38,10 @@ public class StorageFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private long totalBytes = 0;
+    //
+    TextView total_t;
+    TextView used_t;
+    TextView free_t;
 
     // Chart
     ArrayList<PieEntry> entries = new ArrayList<>();
@@ -79,6 +83,9 @@ public class StorageFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_storage, container, false);
         pieChart = v.findViewById(R.id.pieChart);
+        total_t = v.findViewById(R.id.total_state);
+        free_t = v.findViewById(R.id.free_state);
+        used_t = v.findViewById(R.id.used_state);
         checkStorage();
         return v;
     }
@@ -94,6 +101,10 @@ public class StorageFragment extends Fragment {
             bytesAvailable = (long)stat.getBlockSize() * (long)stat.getAvailableBlocks();
         }
         long megAvailable = bytesAvailable / (1024 * 1024);
+
+        total_t.setText(Long.toString(totalBytes) + " MB");
+        free_t.setText(Long.toString(megAvailable) + " MB");
+        used_t.setText(Long.toString(totalBytes-megAvailable) + " MB");
 
         pieChart.setUsePercentValues(true);
         pieChart.getDescription().setEnabled(false);

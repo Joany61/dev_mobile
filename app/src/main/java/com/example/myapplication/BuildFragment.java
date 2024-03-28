@@ -88,15 +88,15 @@ public class BuildFragment extends Fragment {
     }
 
     public void setInformation(){
-        brand_text.setText(Build.BRAND);Log.d("brand", Build.BRAND);
-        product_text.setText(Build.PRODUCT);Log.d("product", Build.PRODUCT);
-        hardware_text.setText(Build.HARDWARE);Log.d("hardware", Build.HARDWARE);
-        device_text.setText(Build.DEVICE);Log.d("device", Build.DEVICE);
-        manufacturer_text.setText(Build.MANUFACTURER);Log.d("manufacturer", Build.MANUFACTURER);
-        model_text.setText(Build.MODEL);Log.d("model", Build.MODEL);
-        security_text.setText(Build.VERSION.SECURITY_PATCH);Log.d("security", Build.VERSION.SECURITY_PATCH);
-        release_text.setText(Build.VERSION.RELEASE);Log.d("release", Build.VERSION.RELEASE);
-        sdk_text.setText(Integer.toString(sdk_version));Log.d("version", Integer.toString(sdk_version));
+        brand_text.setText(Build.BRAND);
+        product_text.setText(Build.PRODUCT);
+        hardware_text.setText(Build.HARDWARE);
+        device_text.setText(Build.DEVICE);
+        manufacturer_text.setText(Build.MANUFACTURER);
+        model_text.setText(Build.MODEL);
+        security_text.setText(Build.VERSION.SECURITY_PATCH);
+        release_text.setText(Build.VERSION.RELEASE);
+        sdk_text.setText(Integer.toString(sdk_version));
     }
 
     @Override

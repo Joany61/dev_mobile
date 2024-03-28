@@ -5,4 +5,7 @@
     <color name="special_background">#03275A</color>
     <color name="grey">#A5AEB7</color>
     <color name="headerColor">#ff1d689a</color>
+    <color name="primaryColor" />
+    <color name="secondaryColor" />
+    <color name="contrastColor" />
 </resources>
