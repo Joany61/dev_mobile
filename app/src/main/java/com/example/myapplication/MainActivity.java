@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity{
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         setupDrawerToggle();
+
     }
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
 

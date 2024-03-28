@@ -1,16 +1,11 @@
 package com.example.myapplication;
 
-
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.telephony.TelephonyManager;
-import android.widget.Toast;
-
 import androidx.fragment.app.Fragment;
 
 public class WifiBluetoothReceiver extends BroadcastReceiver {
@@ -33,22 +28,13 @@ public class WifiBluetoothReceiver extends BroadcastReceiver {
             String stateStr = "OFF";
             switch (state){
                 case WifiManager.WIFI_STATE_ENABLED:
-                    stateStr = "ON";break;
+                    stateStr = "ON";
+                    checkSignalStrength(context);
+                    break;
                 case WifiManager.WIFI_STATE_DISABLED:
                     stateStr = "OFF";break;
             }
             updateFragmentWifUI(context, stateStr);
-        }
-        else if (action.equals(TelephonyManager.ACTION_PHONE_STATE_CHANGED)){
-            int state = intent.getIntExtra(TelephonyManager.EXTRA_STATE, TelephonyManager.DATA_DISCONNECTED);
-            String stateStr = "OFF";
-            switch (state){
-                case TelephonyManager.DATA_CONNECTED:
-                    stateStr = "ON";break;
-                case TelephonyManager.DATA_DISCONNECTED:
-                    stateStr = "OFF";break;
-            }
-            updateFragmentCellUI(context, stateStr);
         }
     }
     private void updateFragmentWifUI(Context context, String status) {
@@ -65,10 +51,16 @@ public class WifiBluetoothReceiver extends BroadcastReceiver {
             ((NetworkFragment) fragment).updateFragmentBtUI(status);
         }
     }
-    private void updateFragmentCellUI(Context context, String status){
+    private void checkSignalStrength(Context context){
+        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiManager.getConnectionInfo();
         Fragment fragment = ((MainActivity) context).getSupportFragmentManager().findFragmentByTag("frag_tag");
         if (fragment instanceof NetworkFragment){
-            ((NetworkFragment) fragment).updateFragmentCellUI(status);
+            if (wifiInfo != null) {
+                int rssi = wifiInfo.getRssi();
+                ((NetworkFragment) fragment).updateFragmentDBUI(rssi);
+            }
         }
+
     }
 }

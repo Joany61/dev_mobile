@@ -2,30 +2,25 @@ package com.example.myapplication;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.lang.reflect.Method;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -44,6 +39,8 @@ public class NetworkFragment extends Fragment{
     private TextView bt_id;
     private TextView cell_state;
     private ConnectivityManager cm;
+    private Handler handler;
+    private Runnable networkCheckRunnable;
     private TextView rate;
     private TextView operatorName;
     // TODO: Rename and change types of parameters
@@ -86,6 +83,7 @@ public class NetworkFragment extends Fragment{
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         requireActivity().registerReceiver(wifiBluetoothReceiver, filter);
+        handler.post(networkCheckRunnable);
     }
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -94,6 +92,15 @@ public class NetworkFragment extends Fragment{
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+        cm = (ConnectivityManager) requireActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        handler = new Handler();
+        networkCheckRunnable = new Runnable() {
+            @Override
+            public void run() {
+                checkNetworkConnectivity();
+                handler.postDelayed(networkCheckRunnable, 2000); // Check every 2 seconds (adjust interval as needed)
+            }
+        };
     }
 
     @Override
@@ -165,7 +172,32 @@ public class NetworkFragment extends Fragment{
             }
         });
     }
-    public void updateFragmentCellUI(String status){
+    public void updateFragmentDBUI(int ss){
+        requireActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                rate.setText(ss + " DB");
+            }
+        });
+    }
+
+    private void checkNetworkConnectivity() {
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+        if (activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+            int networkType = activeNetwork.getType();
+            if (networkType == ConnectivityManager.TYPE_MOBILE) {
+                updateFragmentUI("ON");
+            } else {
+                updateFragmentUI("OFF");
+            }
+        } else {
+            // No network connectivity
+            updateFragmentUI("No Network Connectivity");
+        }
+    }
+
+    private void updateFragmentUI(String status) {
         requireActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -173,10 +205,12 @@ public class NetworkFragment extends Fragment{
             }
         });
     }
+
     @Override
     public void onStop() {
-        super.onStop();
+        handler.removeCallbacks(networkCheckRunnable);
         requireActivity().unregisterReceiver(wifiBluetoothReceiver);
+        super.onStop();
     }
 
 }
